@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mika · 说一句话，它就办成</title>
+<meta name="description" content="Mika 是开源免费的安卓 AI 助理：说一句话，它在一块看不见的后台屏上替你操作 App，把事办成。">
+<link rel="icon" href="assets/media/logo.png">
+<script>
+(function(){try{var t=localStorage.getItem('mika-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('mika-lang')==='en')document.documentElement.setAttribute('data-lang','en');}catch(e){}})();
+</script>
+<style>
+[hidden]{display:none!important}
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue","HarmonyOS Sans SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --ease:cubic-bezier(.28,.11,.32,1);
+}
+html[data-theme="light"]{
+  --bg:#FFFFFF;--alt:#F5F5F7;--ink:#1D1D1F;--ink-2:#6E6E73;--ink-3:#86868B;--line:#D2D2D7;
+  --link:#0066CC;--btn:#0071E3;--btn-h:#0077ED;--nav:rgba(255,255,255,.72);--star:#B7791F;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --bg:#000000;--alt:#161617;--ink:#F5F5F7;--ink-2:#A1A1A6;--ink-3:#86868B;--line:#424245;
+  --link:#2997FF;--btn:#0071E3;--btn-h:#0077ED;--nav:rgba(22,22,23,.72);--star:#F5C451;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:48px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.47 var(--font);letter-spacing:-.022em;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--btn);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:12px;top:-50px;z-index:100;background:var(--ink);color:var(--bg);padding:6px 12px;border-radius:8px;font-size:14px}
+.skip:focus{top:8px}
+.wrap{width:min(980px,100% - 44px);margin-inline:auto}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:50;height:48px;background:var(--nav);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)}
+.nav .wrap{height:100%;display:flex;align-items:center;gap:28px;font-size:12.5px;letter-spacing:-.01em}
+.brand{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:600;margin-right:auto}
+.brand img{width:20px;height:20px;border-radius:5px}
+.nav a.l{color:var(--ink);opacity:.8;transition:opacity .3s}
+.nav a.l:hover{opacity:1}
+.tool{display:flex;align-items:center;gap:14px}
+.tbtn{opacity:.8;font-size:12.5px;display:flex;align-items:center;transition:opacity .3s}
+.tbtn:hover{opacity:1}
+.tbtn svg{width:15px;height:15px}
+html[data-theme="light"] .moon{display:none}
+html[data-theme="dark"] .sun{display:none}
+.nstar{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 11px;border-radius:980px;background:var(--ink);color:var(--bg);font-size:12px;font-weight:500;transition:opacity .3s}
+.nstar:hover{opacity:.85}
+.nstar svg{width:11px;height:11px;color:var(--star)}
+
+/* shared */
+section{padding:112px 0}
+.center{text-align:center}
+.h1{margin:0;font-size:clamp(44px,8vw,80px);line-height:1.05;font-weight:700;letter-spacing:-.015em}
+.h2{margin:0;font-size:clamp(36px,5.6vw,56px);line-height:1.07;font-weight:700;letter-spacing:-.005em}
+.sub{margin:14px auto 0;font-size:clamp(19px,2.2vw,24px);line-height:1.35;color:var(--ink-2);font-weight:500;max-width:30em;letter-spacing:.005em}
+.links{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 36px;margin-top:24px;font-size:clamp(17px,1.8vw,19px)}
+.more{color:var(--link)}
+.more:hover{text-decoration:underline}
+.more::after{content:" ›"}
+.fade{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.fade.in{opacity:1;transform:none}
+
+/* phone */
+.phone{position:relative;margin-inline:auto;width:min(340px,76vw);padding:11px;border-radius:56px;background:#1D1D1F;
+  box-shadow:inset 0 0 0 1.5px #3A3A3C,0 0 0 1px rgba(0,0,0,.06),0 40px 80px -30px rgba(0,0,0,.35)}
+.phone .scr{border-radius:45px;overflow:hidden;aspect-ratio:300/662;background:#000}
+.phone .scr img{width:100%;height:100%;object-fit:cover}
+
+/* hero */
+.hero{padding:96px 0 0;overflow:hidden}
+.hero .tag{font-size:17px;font-weight:600;color:var(--ink-2);margin:0 0 10px}
+.hero .tag a:hover{color:var(--ink)}
+.hero{padding-bottom:96px}
+.hero .phone{margin-top:64px}
+.note{margin:18px auto 0;font-size:12px;color:var(--ink-3)}
+
+/* demos (dark scene) */
+.scene{background:#000;color:#F5F5F7}
+.scene .sub{color:#A1A1A6}
+.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(18px,2.6vw,30px);margin-top:64px;text-align:left}
+.gal figure{margin:0}
+.gal .phone{width:100%;padding:7px;border-radius:38px;box-shadow:inset 0 0 0 1px #3A3A3C,0 30px 60px -34px rgba(0,0,0,.9)}
+.gal .phone .scr{border-radius:31px}
+.gal figcaption{margin-top:22px}
+.gal .q{margin:0;min-height:2.7em;font-size:15px;font-weight:600;line-height:1.35;letter-spacing:-.01em}
+.gal .r{margin:6px 0 0;font-size:13px;line-height:1.45;color:#86868B}
+@media (max-width:820px){.gal{grid-template-columns:repeat(2,1fr);gap:34px 22px}}
+@media (max-width:520px){
+  .gal{display:flex;gap:14px;margin:56px -22px 0;padding:0 22px 6px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .gal::-webkit-scrollbar{display:none}
+  .gal figure{flex:0 0 66%;scroll-snap-align:center}
+}
+.scene .fine{margin:44px auto 0;max-width:44em;font-size:12px;color:#6E6E73;text-align:center}
+
+/* privacy */
+.alt{background:var(--alt)}
+.flow{margin:56px auto 0;display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,32px);font-size:clamp(15px,1.8vw,19px);font-weight:600;flex-wrap:wrap}
+.flow .x{color:var(--ink-3);text-decoration:line-through;text-decoration-thickness:2px;font-weight:500}
+.flow .ar{color:var(--ink-3);font-weight:400}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:80px;text-align:left}
+.three h3{margin:0 0 8px;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.three p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.5}
+.needs{color:#C26A00;font-weight:600}
+html[data-theme="dark"] .needs{color:#FF9F0A}
+
+/* get */
+.btns{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:36px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 22px;border-radius:980px;font-size:17px;font-weight:400;transition:background-color .3s,color .3s}
+.btn-p{background:var(--btn);color:#fff}
+.btn-p:hover{background:var(--btn-h)}
+.btn-s{color:var(--link);box-shadow:inset 0 0 0 1px var(--link)}
+.btn-s:hover{background:var(--link);color:#fff}
+.btn small{font-size:13px;opacity:.75}
+.ver{margin-top:16px;font-size:14px;color:var(--ink-2)}
+.ver a{color:var(--link)}
+.ver a:hover{text-decoration:underline}
+
+.star{margin-top:96px;padding-top:72px;border-top:1px solid var(--line)}
+.num{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px;font-size:clamp(56px,9vw,96px);font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.num svg{width:.55em;height:.55em;color:var(--star)}
+.numcap{margin-top:8px;font-size:14px;color:var(--ink-2)}
+.sbtn{position:relative}
+.sbtn svg{width:15px;height:15px;transition:transform .7s var(--ease)}
+.sbtn:hover svg{transform:rotate(72deg) scale(1.1)}
+.spark{position:absolute;left:30px;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--star);pointer-events:none;animation:spark .6s var(--ease) forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+.people{margin-top:56px}
+.people p{margin:0;font-size:14px;color:var(--ink-2)}
+.avatars{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;list-style:none;margin:16px auto 0;padding:0;max-width:640px}
+.avatars img{width:36px;height:36px;border-radius:50%;transition:transform .4s var(--ease)}
+.avatars a:hover img{transform:scale(1.1)}
+
+/* footer */
+footer{background:var(--alt);padding:20px 0 28px;font-size:12px;color:var(--ink-3);line-height:1.6}
+footer .fine{padding-bottom:14px;border-bottom:1px solid var(--line)}
+footer .fine a{color:var(--link)}
+footer .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding-top:14px}
+footer ul{display:flex;flex-wrap:wrap;gap:4px 0;list-style:none;margin:0;padding:0}
+footer li+li::before{content:"|";margin:0 10px;color:var(--line)}
+footer a:hover{text-decoration:underline}
+
+@media (max-width:734px){
+  .nav a.l{display:none}
+  section{padding:80px 0}
+  .hero{padding-top:64px}
+  .three{grid-template-columns:1fr;gap:32px;margin-top:56px}
+  .star{margin-top:72px;padding-top:56px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+  .fade{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">跳到正文</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="m12 3.2 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></symbol>
+</svg>
+
+<nav class="nav" aria-label="主导航">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/media/logo.png" width="20" height="20" alt="">Mika</a>
+    <a class="l" href="#demos" data-i18n="nav.demos">演示</a>
+    <a class="l" href="#privacy" data-i18n="nav.privacy">隐私</a>
+    <a class="l" href="#get" data-i18n="nav.get">下载</a>
+    <div class="tool">
+      <button class="tbtn" id="langBtn" type="button"><span id="langLabel">EN</span></button>
+      <button class="tbtn" id="themeBtn" type="button">
+        <svg class="sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="nstar" id="navStar" href="https://github.com/wangzan101/Mika" target="_blank" rel="noopener">
+        <svg aria-hidden="true"><use href="#i-star"/></svg><span>Star</span><span data-gh="starsShort" hidden></span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero center" id="top">
+    <div class="wrap">
+      <p class="tag"><a id="relTag" data-gh-href="release" href="https://github.com/wangzan101/Mika/releases/latest" target="_blank" rel="noopener"><span id="relText" data-i18n="hero.tag">Mika 公开测试版</span></a></p>
+      <h1 class="h1" data-i18n-html="hero.h1">说一句话，<br>它就办成。</h1>
+      <p class="sub" data-i18n="hero.sub">安卓上的 AI 助理。它在一块看不见的屏幕上替你操作 App，你照常用手机。</p>
+      <div class="links">
+        <a class="more" href="#get" data-i18n="hero.dl">下载</a>
+        <a class="more" href="https://github.com/wangzan101/Mika" target="_blank" rel="noopener" data-i18n="hero.gh">在 GitHub 上查看</a>
+      </div>
+      <div class="phone fade">
+        <div class="scr"><img src="assets/media/wechat-group.gif" width="300" height="662" alt="Mika 在后台屏上翻看群聊记录并总结" data-i18n-alt="hero.alt"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMOS -->
+  <section class="scene center" id="demos" aria-labelledby="demos-h">
+    <div class="wrap">
+      <h2 class="h2 fade" id="demos-h" data-i18n="demos.h">你说，它做。</h2>
+      <p class="sub fade" data-i18n="demos.sub">不需要 App 开放接口。它像人一样看屏幕、点按钮。</p>
+      <div class="gal fade">
+        <figure>
+          <div class="phone"><div class="scr"><img src="assets/media/amazon-cart.gif" width="300" height="662" loading="lazy" decoding="async" alt="Mika 在购物 App 里挑充电器并加入购物车" data-i18n-alt="demo.1.alt"></div></div>
+          <figcaption>
+            <p class="q" data-i18n="demo.1.q">挑个 30 美元以内、4.5 星以上的充电器</p>
+            <p class="r" data-i18n="demo.1.r">加进购物车，停在结账前</p>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="phone"><div class="scr"><img src="assets/media/xhs-summary.gif" width="300" height="662" loading="lazy" decoding="async" alt="Mika 打开小红书逐条阅读并总结" data-i18n-alt="demo.2.alt"></div></div>
+          <figcaption>
+            <p class="q" data-i18n="demo.2.q">总结这个博主最近发了什么</p>
+            <p class="r" data-i18n="demo.2.r">打开 App 逐条看完再整理</p>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="phone"><div class="scr"><img src="assets/media/google-flights.gif" width="300" height="662" loading="lazy" decoding="async" alt="Mika 在航班网站上比价直飞航班" data-i18n-alt="demo.3.alt"></div></div>
+          <figcaption>
+            <p class="q" data-i18n="demo.3.q">找旧金山到纽约最便宜的直飞</p>
+            <p class="r" data-i18n="demo.3.r">在航班网站比完价告诉你</p>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="phone"><div class="scr"><img src="assets/media/hacker-news.gif" width="300" height="662" loading="lazy" decoding="async" alt="Mika 阅读新闻站首页并念出前五条" data-i18n-alt="demo.4.alt"></div></div>
+          <figcaption>
+            <p class="q" data-i18n="demo.4.q">读一下新闻站首页前 5 条</p>
+            <p class="r" data-i18n="demo.4.r">连同分数一起念给你</p>
+          </figcaption>
+        </figure>
+      </div>
+      <p class="fine" data-i18n="demos.fine">真实录屏，已加速，隐私内容已打码。部分演示使用中国常用 App（小红书为生活方式社区）。</p>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="alt center" id="privacy" aria-labelledby="pv-h">
+    <div class="wrap">
+      <h2 class="h2 fade" id="pv-h" data-i18n-html="pv.h">你的手机，<br>直连你选的模型。</h2>
+      <p class="sub fade" data-i18n="pv.sub">中间没有 Mika 服务器。</p>
+      <div class="flow fade" aria-hidden="true">
+        <span data-i18n="pv.f1">你的手机</span><span class="ar">→</span>
+        <span class="x" data-i18n="pv.f2">Mika 服务器</span><span class="ar">→</span>
+        <span data-i18n="pv.f3">你选的模型</span>
+      </div>
+      <div class="three">
+        <div class="fade"><h3 data-i18n="pv.1.h">不占你的屏幕</h3><p data-i18n="pv.1.p">App 在后台屏上运行，主屏照常使用，想看进度随时点开。</p></div>
+        <div class="fade"><h3 data-i18n="pv.2.h">花钱前先问你</h3><p data-i18n-html="pv.2.p">下单、付款前会确认；登录和验证码标为<span class="needs">「需要你」</span>。随时可以喊停。</p></div>
+        <div class="fade"><h3 data-i18n="pv.3.h">数据留在手机上</h3><p data-i18n="pv.3.p">API Key 和记忆加密保存，对话不离开手机。DeepSeek、通义、Kimi、OpenAI、本地模型都能接。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GET + STAR -->
+  <section class="center" id="get" aria-labelledby="get-h">
+    <div class="wrap">
+      <h2 class="h2 fade" id="get-h" data-i18n="get.h">免费，开源。</h2>
+      <p class="sub fade" data-i18n="get.sub">下载安装，连上模型，说句话试试。</p>
+      <div class="btns fade">
+        <a class="btn btn-p" data-gh-href="apk" href="https://github.com/wangzan101/Mika/releases/latest" target="_blank" rel="noopener">
+          <span data-i18n="get.dl">下载 APK</span><small data-gh="apkSize" hidden></small>
+        </a>
+        <a class="btn btn-s" data-gh-href="apkArm" data-gh-show="apkArm" href="#" target="_blank" rel="noopener" hidden>
+          <span data-i18n="get.arm">arm64 版</span><small data-gh="apkArmSize"></small>
+        </a>
+      </div>
+      <p class="ver fade"><span id="verText" data-i18n="get.ver">Android 11 及以上</span> · <a data-gh-href="release" href="https://github.com/wangzan101/Mika/releases/latest" target="_blank" rel="noopener" data-i18n="get.notes">更新说明</a></p>
+
+      <div class="star" id="star">
+        <h2 class="h2 fade" data-i18n="star.h">喜欢，就点颗星。</h2>
+        <p class="sub fade" data-i18n="star.sub">没有服务器，没有推广预算。Star 是它被更多人看见的方式。</p>
+        <div data-gh-show="stars" hidden>
+          <div class="num"><svg aria-hidden="true"><use href="#i-star"/></svg><span id="starCount">0</span></div>
+          <div class="numcap" data-i18n="star.cap">个 Star</div>
+        </div>
+        <div class="btns">
+          <a class="btn btn-p sbtn" id="starCta" href="https://github.com/wangzan101/Mika" target="_blank" rel="noopener">
+            <svg aria-hidden="true"><use href="#i-star"/></svg><span data-i18n="star.cta">在 GitHub 上 Star</span>
+          </a>
+        </div>
+        <div class="people" data-gh-show="contributors" hidden>
+          <p id="contribLine"></p>
+          <ul class="avatars" id="avatars"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="fine" data-i18n-html="foot.risk">操作 App 需要 Android 12 及以上，推荐 Android 14+。自动操作第三方 App 和网站可能违反其用户协议，请自行判断；重要的事请检查结果。Mika 仍是早期测试版，详见<a href="https://github.com/wangzan101/Mika/blob/main/docs/disclaimer.md" target="_blank" rel="noopener">免责声明</a>。</p>
+    <div class="row">
+      <span>© <span id="year">2026</span> <span data-i18n="foot.by">王赞 和贡献者们</span> · Apache-2.0</span>
+      <ul>
+        <li><a href="https://github.com/wangzan101/Mika/blob/main/docs/README.md" target="_blank" rel="noopener" data-i18n="foot.docs">文档</a></li>
+        <li><a href="https://github.com/wangzan101/Mika/issues/new/choose" target="_blank" rel="noopener" data-i18n="foot.issue">反馈</a></li>
+        <li><a href="https://github.com/wangzan101/Mika/blob/main/.github/CONTRIBUTING.zh-CN.md" target="_blank" rel="noopener" data-i18n="foot.contrib">参与贡献</a></li>
+        <li><a href="https://x.com/wangzan101" target="_blank" rel="noopener">X</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var API = 'https://api.github.com/repos/wangzan101/Mika';
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  function lang() { return root.getAttribute('data-lang') === 'en' ? 'en' : 'zh'; }
+
+  /* ---------- i18n ---------- */
+  var EN = {
+    'skip': 'Skip to content', 'nav.demos': 'Demos', 'nav.privacy': 'Privacy', 'nav.get': 'Download',
+    'hero.tag': 'Mika public beta', 'hero.h1': 'Say it once.<br>It’s done.',
+    'hero.sub': 'An AI assistant for Android. It operates apps on a screen you never see, while you keep using your phone.',
+    'hero.dl': 'Download', 'hero.gh': 'View on GitHub',
+    'hero.alt': 'Mika reading a group chat on its background screen and summarizing it',
+    'demos.h': 'You say it. It does it.', 'demos.sub': 'No app has to open an API. It reads the screen and taps, like a person.',
+    'demo.1.q': 'A charger under $30, rated 4.5 stars or more', 'demo.1.r': 'Adds it to the cart and stops before checkout', 'demo.1.alt': 'Mika picking a charger in a shopping app and adding it to the cart',
+    'demo.2.q': 'What has this creator posted lately?', 'demo.2.r': 'Opens the app, reads every post, then sums it up', 'demo.2.alt': 'Mika opening Xiaohongshu and reading through the posts',
+    'demo.3.q': 'Cheapest nonstop from San Francisco to New York', 'demo.3.r': 'Compares fares on a flight site and reports back', 'demo.3.alt': 'Mika comparing nonstop fares on a flight site',
+    'demo.4.q': 'Read me the top 5 stories on a news site', 'demo.4.r': 'Reads them out along with their points', 'demo.4.alt': 'Mika reading the front page of a news site',
+    'demos.fine': 'Real screen recordings, sped up, private content blurred. Some demos use apps popular in China (Xiaohongshu is a lifestyle community).',
+    'pv.h': 'Your phone talks<br>straight to your model.', 'pv.sub': 'No Mika server in between.',
+    'pv.f1': 'Your phone', 'pv.f2': 'Mika server', 'pv.f3': 'Your model',
+    'pv.1.h': 'Stays off your screen', 'pv.1.p': 'Apps run on a background screen. Your main screen stays yours; peek at progress any time.',
+    'pv.2.h': 'Asks before spending', 'pv.2.p': 'It confirms before orders and payments; logins and codes are marked <span class="needs">“Needs you”</span>. Stop it any time.',
+    'pv.3.h': 'Data stays on the phone', 'pv.3.p': 'API keys and memories are encrypted; chats never leave the phone. Works with DeepSeek, Qwen, Kimi, OpenAI and local models.',
+    'get.h': 'Free. Open source.', 'get.sub': 'Install, connect a model, and say something.',
+    'get.dl': 'Download APK', 'get.arm': 'arm64 build', 'get.ver': 'Android 11 or later', 'get.notes': 'Release notes',
+    'star.h': 'Like it? Star it.', 'star.sub': 'No server, no marketing budget. Stars are how more people find it.',
+    'star.cap': 'stars', 'star.cta': 'Star on GitHub',
+    'foot.risk': 'Operating apps needs Android 12 or later; Android 14+ recommended. Automating third-party apps and websites may break their terms, so use your judgment and check important results. Mika is an early beta; see the <a href="https://github.com/wangzan101/Mika/blob/main/docs/disclaimer.en.md" target="_blank" rel="noopener">disclaimer</a>.',
+    'foot.by': 'Wang Zan and contributors', 'foot.docs': 'Docs', 'foot.issue': 'Feedback', 'foot.contrib': 'Contribute'
+  };
+  var ZH = {};
+  $$('[data-i18n]').forEach(function (el) { ZH[el.dataset.i18n] = el.textContent; });
+  $$('[data-i18n-html]').forEach(function (el) { ZH[el.dataset.i18nHtml] = el.innerHTML; });
+  $$('[data-i18n-alt]').forEach(function (el) { ZH[el.dataset.i18nAlt] = el.alt; });
+  var UI = {
+    zh: { title: 'Mika · 说一句话，它就办成', lang: 'zh-CN', btn: 'EN', btnL: 'Switch to English', light: '切换到浅色', dark: '切换到深色', nav: '主导航',
+      star: function (n) { return n ? '在 GitHub 上 Star，已有 ' + n + ' 个' : '在 GitHub 上 Star'; },
+      contrib: function (n) { return '由 ' + n + ' 位贡献者共同打造'; }, os: 'Android 11 及以上' },
+    en: { title: 'Mika · Say it once. It’s done.', lang: 'en', btn: '中文', btnL: '切换到中文', light: 'Switch to light', dark: 'Switch to dark', nav: 'Main navigation',
+      star: function (n) { return n ? 'Star on GitHub, ' + n + ' stars' : 'Star on GitHub'; },
+      contrib: function (n) { return 'Built by ' + n + ' contributors'; }, os: 'Android 11 or later' }
+  };
+  function applyLang(L) {
+    root.setAttribute('data-lang', L);
+    var d = L === 'en' ? EN : ZH;
+    $$('[data-i18n]').forEach(function (el) { var v = d[el.dataset.i18n]; if (v != null) el.textContent = v; });
+    $$('[data-i18n-html]').forEach(function (el) { var v = d[el.dataset.i18nHtml]; if (v != null) el.innerHTML = v; });
+    $$('[data-i18n-alt]').forEach(function (el) { var v = d[el.dataset.i18nAlt]; if (v != null) el.alt = v; });
+    var u = UI[L];
+    document.title = u.title; root.lang = u.lang;
+    $('#langLabel').textContent = u.btn; $('#langBtn').setAttribute('aria-label', u.btnL);
+    $('.nav').setAttribute('aria-label', u.nav);
+    syncTheme(); renderGH();
+    store.set('mika-lang', L);
+  }
+  function syncTheme() { $('#themeBtn').setAttribute('aria-label', root.getAttribute('data-theme') === 'dark' ? UI[lang()].light : UI[lang()].dark); }
+  $('#langBtn').addEventListener('click', function () { applyLang(lang() === 'en' ? 'zh' : 'en'); });
+  $('#themeBtn').addEventListener('click', function () {
+    var t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t); store.set('mika-theme', t); syncTheme();
+  });
+
+  /* ---------- GitHub live data ---------- */
+  var GH = null, CACHE = 'mika-gh-v1', TTL = 30 * 60 * 1000;
+  function mb(b) { if (!b) return ''; var m = b / 1048576; return (m >= 100 ? Math.round(m) : m.toFixed(1)) + ' MB'; }
+  function short(n) { if (n < 1000) return String(n); var k = n / 1000; return (k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')) + 'k'; }
+  function long(n) { return new Intl.NumberFormat(lang() === 'en' ? 'en' : 'zh-CN').format(n); }
+  function ago(iso) {
+    var d = new Date(iso); if (isNaN(d)) return '';
+    var days = Math.round((Date.now() - d) / 86400000);
+    var rtf = new Intl.RelativeTimeFormat(lang() === 'en' ? 'en' : 'zh-CN', { numeric: 'auto' });
+    return days < 30 ? rtf.format(-days, 'day') : days < 365 ? rtf.format(-Math.round(days / 30), 'month') : rtf.format(-Math.round(days / 365), 'year');
+  }
+  function getJSON(p) {
+    var ctl = 'AbortController' in window ? new AbortController() : null;
+    var tm = ctl && setTimeout(function () { ctl.abort(); }, 10000);
+    return fetch(API + p, { headers: { Accept: 'application/vnd.github+json' }, signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { if (tm) clearTimeout(tm); if (!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function loadGH() {
+    var c = null; try { c = JSON.parse(store.get(CACHE) || 'null'); } catch (e) {}
+    if (c && c.data) { GH = c.data; renderGH(); }
+    if (c && Date.now() - c.t < TTL) return;
+    Promise.allSettled([getJSON(''), getJSON('/releases?per_page=100'), getJSON('/contributors?per_page=100')]).then(function (res) {
+      var n = GH ? JSON.parse(JSON.stringify(GH)) : {}, ok = false;
+      if (res[0].status === 'fulfilled') { n.stars = res[0].value.stargazers_count; ok = true; }
+      if (res[1].status === 'fulfilled' && Array.isArray(res[1].value)) {
+        ok = true;
+        var rels = res[1].value.filter(function (r) { return !r.draft; });
+        n.downloads = rels.reduce(function (s, r) { return s + (r.assets || []).reduce(function (a, x) { return a + (x.download_count || 0); }, 0); }, 0);
+        var r = rels.filter(function (x) { return !x.prerelease; })[0] || rels[0];
+        if (r) {
+          n.release = { tag: r.tag_name, date: r.published_at, url: r.html_url };
+          var apks = (r.assets || []).filter(function (a) { return /\.apk$/i.test(a.name); });
+          var arm = apks.filter(function (a) { return /-arm64\.apk$/i.test(a.name); })[0];
+          var uni = apks.filter(function (a) { return !/-(arm64|armeabi|x86|x86_64)[^.]*\.apk$/i.test(a.name); })[0] || apks[0];
+          n.apk = uni ? { url: uni.browser_download_url, size: uni.size } : null;
+          n.apkArm = arm && arm !== uni ? { url: arm.browser_download_url, size: arm.size } : null;
+        }
+      }
+      if (res[2].status === 'fulfilled' && Array.isArray(res[2].value)) {
+        ok = true;
+        var p = res[2].value.filter(function (x) { return x.type !== 'Bot'; });
+        n.contribCount = p.length;
+        n.contributors = p.slice(0, 40).map(function (x) { return { login: x.login, avatar: x.avatar_url, url: x.html_url }; });
+      }
+      if (ok) { GH = n; store.set(CACHE, JSON.stringify({ t: Date.now(), data: GH })); renderGH(); }
+    });
+  }
+  function setText(k, v) { $$('[data-gh="' + k + '"]').forEach(function (el) { el.textContent = v; el.hidden = !v; }); }
+  function show(k, on) { $$('[data-gh-show="' + k + '"]').forEach(function (el) { el.hidden = !on; }); }
+  function href(k, url) { if (url) $$('[data-gh-href="' + k + '"]').forEach(function (el) { el.href = url; }); }
+
+  var started = false, done = false;
+  function renderGH() {
+    var u = UI[lang()], g = GH || {}, L = lang();
+    var hasS = typeof g.stars === 'number';
+    setText('starsShort', hasS ? short(g.stars) : '');
+    $('#navStar').setAttribute('aria-label', u.star(hasS ? long(g.stars) : ''));
+    show('stars', hasS);
+    if (hasS && (done || reduce)) $('#starCount').textContent = long(g.stars);
+    else if (hasS && !started) $('#starCount').textContent = '0';
+
+    if (g.release) {
+      var a = ago(g.release.date);
+      $('#relText').textContent = L === 'en'
+        ? 'Mika ' + g.release.tag + (a ? ' · updated ' + a : '')
+        : 'Mika ' + g.release.tag + (a ? ' · ' + a + '更新' : '');
+      $('#verText').textContent = g.release.tag + ' · ' + u.os;
+      href('release', g.release.url);
+    }
+    if (g.apk) { href('apk', g.apk.url); setText('apkSize', g.apk.size ? mb(g.apk.size) : ''); }
+    if (g.apkArm) { href('apkArm', g.apkArm.url); setText('apkArmSize', g.apkArm.size ? mb(g.apkArm.size) : ''); show('apkArm', true); }
+
+    if (g.contributors && g.contributors.length) {
+      show('contributors', true);
+      $('#contribLine').textContent = u.contrib(g.contribCount >= 100 ? '100+' : g.contribCount);
+      var box = $('#avatars');
+      if (box.childElementCount !== g.contributors.length) {
+        box.textContent = '';
+        g.contributors.forEach(function (c) {
+          var li = document.createElement('li'), l = document.createElement('a'), im = document.createElement('img');
+          l.href = c.url; l.target = '_blank'; l.rel = 'noopener'; l.title = c.login; l.setAttribute('aria-label', c.login);
+          im.src = c.avatar + (c.avatar.indexOf('?') > -1 ? '&' : '?') + 's=72'; im.width = 36; im.height = 36; im.alt = ''; im.loading = 'lazy';
+          l.appendChild(im); li.appendChild(l); box.appendChild(li);
+        });
+      }
+    }
+    if (hasS && !started) {
+      var r = $('#star').getBoundingClientRect();
+      if (r.top < innerHeight && r.bottom > 0) countUp();
+    }
+  }
+
+  function countUp() {
+    if (!GH || typeof GH.stars !== 'number' || started) return;
+    started = true;
+    var el = $('#starCount'), target = GH.stars;
+    if (reduce || target < 2) { el.textContent = long(target); done = true; return; }
+    var t0 = performance.now(), dur = 1200;
+    (function tick(t) {
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = long(Math.round(target * e));
+      if (p < 1) requestAnimationFrame(tick); else done = true;
+    })(t0);
+  }
+
+  $('#starCta').addEventListener('click', function () {
+    if (reduce) return;
+    for (var i = 0; i < 12; i++) {
+      var s = document.createElement('span'); s.className = 'spark';
+      var ang = (Math.PI * 2 * i) / 12 + Math.random() * 0.4, dist = 26 + Math.random() * 22;
+      s.style.setProperty('--dx', Math.cos(ang) * dist + 'px'); s.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+      this.appendChild(s);
+      setTimeout(function (n) { return function () { n.remove(); }; }(s), 650);
+    }
+  });
+
+  /* ---------- observers ---------- */
+  var fades = $$('.fade');
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    fades.forEach(function (el) { io.observe(el); });
+    var sio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { countUp(); if (started) sio.disconnect(); } });
+    }, { threshold: 0.3 });
+    sio.observe($('#star'));
+  } else { fades.forEach(function (el) { el.classList.add('in'); }); countUp(); }
+
+  $('#year').textContent = new Date().getFullYear();
+  applyLang(lang());
+  loadGH();
+})();
+</script>
+</body>
+</html>
